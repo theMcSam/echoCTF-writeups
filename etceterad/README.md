@@ -36,10 +36,12 @@ After a search for vulnerabilities associated with `etcd` running on `2379` we c
 PoC for this vulnerability can be found here: https://github.com/lucyxss/etcd-3.4.10-test/blob/master/temp4cj.png
 
 Testing to see if our instance is also vulnerable.
+
 ![Vuln PoC](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/debug_poc_2379.png)
 
 ## Exploitation
-Using this vulnerability we care able to view leaked credetials for authenticating to `etcd`.
+Using this vulnerability we care able to view leaked credentials for authenticating to `etcd`.
+
 ![Leaked Creds](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/leaked_creds_from_etctd_vuln.png)
 
 To be able to hack `etcd` we must first understand what it is. `etcd` is a distributed key-value store used to store configuration data and coordinate distributed systems. Effectively, `etcd` acts as a database where clients can query data from the server in a distributed environment.
