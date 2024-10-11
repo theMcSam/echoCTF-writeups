@@ -14,7 +14,7 @@ PORT     STATE SERVICE REASON
 2379/tcp open  etcd-client syn-ack ttl 63
 ```
 
-From the above scan we see that there are three services running. Nmap gives us an idea of the services running on the port and from that we can see that `etcd` is running on port `2379`. There's another service running on `1337` and after doing a service scan on it we realized it's a web application and hence can be accessed via the browser.<br>
+From the above scan we see that there are three services running. Nmap gives us an idea of the services running and from that we can see that `etcd` is running on port `2379`. There's another service running on `1337` and after doing a service scan on it we realized it's a web application and hence can be accessed via the browser.<br>
 
 ```
 mcsam@0x32:~/$ sudo nmap -sV 10.0.160.122 -p 1337
@@ -26,7 +26,7 @@ PORT     STATE SERVICE VERSION
 1337/tcp open  http    Node.js (Express middleware)
 ```
 <br>
-Accessing the website from he browser.
+Accessing the website from via the browser.
 
 ![etceterad website](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/1337-website-etcd.png)
 
