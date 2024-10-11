@@ -73,14 +73,12 @@ KV Write:
 ```
 
 From the above results users with the role `etsctf` can read and write to the `/home` and `/nodejs` prefixes.
-<br>
+
 We will attempt to view the keys under the `/nodejs` prefix.
 ```
 mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.0.160.122:2379 get --prefix "/nodejs/" --keys-only
 /nodejs/index
 ```
-
-<br>
 
 Viewing the value stored in the "/nodejs/index" key.
 ```
