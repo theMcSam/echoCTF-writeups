@@ -71,7 +71,7 @@ KV Write:
 	[/home/, /home0) (prefix /home/)
 	[/nodejs/, /nodejs0) (prefix /nodejs/)
 ```
-
+    
 From the above results users with the role `etsctf` can read and write to the `/home` and `/nodejs` prefixes.
 
 We will attempt to view the keys under the `/nodejs` prefix.
