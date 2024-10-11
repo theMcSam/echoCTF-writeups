@@ -107,7 +107,7 @@ Since we have write access to `/nodejs/index` key we will write our own content 
 mcsam@0x32:~/$ ETCDCTL_API=3 etcdctl --user nodejs:sjedon --endpoints http://10.0.160.122:2379 put "/nodejs/index" "Bingo: <%= 7*7 %>" 
 OK
 ```
-We reload reloading the web app on port `1337` and bingo!!! <br>
+We reload the web app on port `1337` and bingo!!! <br>
 ![Leaked Creds](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/ssti_1337_poc.png)
 
 After a number of google searches we find a payload that can help us execute code on the target. We can leverage this to spawn a reverse shell on the target.
