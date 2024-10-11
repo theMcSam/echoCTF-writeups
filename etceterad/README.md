@@ -27,7 +27,7 @@ PORT     STATE SERVICE VERSION
 ```
 <br>
 
-![etceterad website](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/blob/main/etceterad/images/1337-website-etcd.png)
+![etceterad website](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/1337-website-etcd.png)
 
 After a search for vulnerabilities associated with `etcd` we can find that this version of `etcd` is vulnerable to `CVE-2021-28235`.
 
