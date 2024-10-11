@@ -30,10 +30,16 @@ Accessing the website from he browser.
 
 ![etceterad website](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/1337-website-etcd.png)
 
-After a search for vulnerabilities associated with `etcd` we can find that this version of `etcd` is vulnerable to `CVE-2021-28235`.
+
+After a search for vulnerabilities associated with `etcd` running on `2379` we can find that this version of `etcd` is vulnerable to `CVE-2021-28235`.
 
 PoC for this vulnerability can be found here: https://github.com/lucyxss/etcd-3.4.10-test/blob/master/temp4cj.png
 
+Testing to see if our instance is also vulnerable.
+![Vuln PoC](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/debug_poc_2379.png)
+
 Using this vulnerability we care able to view leaked credetials for authenticating to `etcd`.
+![Leaked Creds](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/leaked_creds_from_etctd_vuln.png)
+
 
 
