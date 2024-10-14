@@ -40,7 +40,7 @@ Testing to see if our instance is also vulnerable.
 ![Vuln PoC](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/debug_poc_2379.png)
 
 ## Exploitation
-Using this vulnerability we care able to view leaked credentials for authenticating to `etcd`.
+Using this vulnerability we are able to view leaked credentials for authenticating to `etcd`.
 
 ![Leaked Creds](https://raw.githubusercontent.com/theMcSam/echoCTF-writeups/refs/heads/main/etceterad/images/leaked_creds_from_etctd_vuln.png)
 
